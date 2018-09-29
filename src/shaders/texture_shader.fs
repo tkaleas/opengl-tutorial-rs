@@ -6,9 +6,13 @@ in vec2 TexCoord;
 
 // texture sampler
 uniform sampler2D texture1;
+uniform sampler2D texture2;
 
 void main()
 {
     //FragColor = vec4(ourColor, 1.0f);
-    FragColor =texture(texture1,TexCoord);
+    vec2 BackwardsCoords = vec2(1.0-TexCoord.x,TexCoord.y);
+    vec4 FaceColor = texture(texture2,BackwardsCoords);
+    vec4 BGColor = texture(texture1,TexCoord);
+    FragColor = mix(BGColor,FaceColor,0.2);
 }

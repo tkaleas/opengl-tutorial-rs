@@ -95,7 +95,7 @@ fn main() {
     //     0.5,  1.0
     // ];
 
-    let (shader, VAO1, texture, EBO) = unsafe {
+    let (shader, VAO1, texture1, texture2, EBO) = unsafe {
 
         let shader = Shader::new(
             "src/shaders/texture_shader.vs",
@@ -109,9 +109,9 @@ fn main() {
         let textureImage = image::open("resources/textures/container.jpg").expect("Failed to Open Image");
         let data = textureImage.raw_pixels();
         let (width, height) = textureImage.dimensions();
-        let mut texture = 0;
-        gl::GenTextures(1, &mut texture);
-        gl::BindTexture(gl::TEXTURE_2D, texture);
+        let mut texture1 = 0;
+        gl::GenTextures(1, &mut texture1);
+        gl::BindTexture(gl::TEXTURE_2D, texture1);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
@@ -127,8 +127,32 @@ fn main() {
             &data[0] as *const u8 as *const c_void,
         );
         gl::GenerateMipmap(gl::TEXTURE_2D);
+
+        //Texture 2
+        let textureImage = image::open("resources/textures/awesomeface.png").expect("Failed to Open Image");
+        let data = textureImage.flipv().raw_pixels();
+        let (width, height) = textureImage.dimensions();
+        let mut texture2 = 0;
+        gl::GenTextures(1, &mut texture2);
+        gl::BindTexture(gl::TEXTURE_2D, texture2);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+        gl::TexImage2D(gl::TEXTURE_2D,
+            0, 
+            gl::RGB as i32,
+            width as i32,
+            height as i32,
+            0,
+            gl::RGBA,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+
         //gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
-        (shader,VAO1,texture,EBO)
+        (shader,VAO1,texture1,texture2,EBO)
     };
 
     // render loop
@@ -152,8 +176,15 @@ fn main() {
             //gl::UseProgram(shaderProgram);
             //gl::Uniform4f(vertexColorLocation, 0.0, greenValue as f32, 0.0, 1.0);
 
-            gl::BindTexture(gl::TEXTURE_2D,texture);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D,texture1);
+            gl::ActiveTexture(gl::TEXTURE1);
+            gl::BindTexture(gl::TEXTURE_2D,texture2);
+            
             shader.useProgram();
+            shader.setInt(&CString::new("texture1").unwrap(),0);
+            shader.setInt(&CString::new("texture2").unwrap(),1);
+
             gl::BindVertexArray(VAO1);
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, ptr::null());
 
