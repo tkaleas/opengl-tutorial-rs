@@ -15,4 +15,4 @@ rand = "0.5.5"
 
 [dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs.git"
-# default-features = false
+#default-features = false
